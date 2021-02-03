@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html xmlns:th="https://www.thymeleaf.org/">
+
+<head>
+    <meta charset="ISO-8859-1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+    <title>Insert title here</title>
+</head>
+
+<body>
+    <div class="container">
+        <div class="card">
+            <div class="card card-header bg-primary text-white text-center">
+                <h3>WELCOME TO STUDENT REGISTER PAGE USING JPDB</h3>
+            </div>
+            <!-- end card header -->
+
+            <div class="card card-body">
+                <form id="studentReg" th:action="@{/om/save}" method="POST">
+
+                    <div class="row">
+                        <div class="col-3">
+                            <label>Student Id :</label>
+                        </div>
+                        <div class="col-4">
+                            <input type="text" name="stdId" id="stdId" class="form-control" />
+                        </div>
+                        <div class="col-5">
+                            <span id="stdIdError"></span>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-3">
+                            <label>Student Name :</label>
+                        </div>
+                        <div class="col-4">
+                            <input type="text" name="stdName" id="stdName" class="form-control" />
+                        </div>
+                        <div class="col-5">
+                            <span id="stdNameError"></span>
+                        </div>
+                    </div>
+
+
+
+
+                    <div class="row">
+                        <div class="col-3">
+                            <label>Student Mail Id :</label>
+                        </div>
+                        <div class="col-4">
+                            <input type="text" name="stdMail" id="stdMail" class="form-control" />
+                        </div>
+                        <div class="col-5">
+                            <span id="stdMailError"></span>
+                        </div>
+                    </div>
+
+
+                    <div class="row">
+                        <div class="col-3">
+                            <label>Student Address :</label>
+                        </div>
+                        <div class="col-4">
+                            <textarea name="stdAddress" id="stdAddress" class="form-control"></textarea>
+                        </div>
+                        <div class="col-5">
+                            <span id="orderDescError"></span>
+                        </div>
+                    </div>
+                    <input type="button" value="Add Student" class="btn btn-danger" onclick="saveStudent();" />
+                </form>
+            </div>
+            <!-- end card-body -->
+            <div class="card card-footer bg-success">
+                <span></span>
+            </div>
+            <!-- end footer -->
+        </div>
+        <!-- end card -->
+    </div>
+    <!-- end container -->
+
+    <script>
+        $("#stdId").focus();
+        function validateAndGetFormData() {
+            var stdIdVar = $("#stdId").val();
+            if (stdIdVar === 0) {
+                alert("*Please Insert Student Id");
+                $("#stdId").focus();
+                return "";
+            }
+            var stdNameVar = $("#stdName").val();
+            if (stdNameVar === "") {
+                alert("Student Name is Required Value");
+                $("#stdName").focus();
+                return "";
+            }
+
+            var stdMailVar = $("#stdMail").val();
+            if (stdMailVar === "") {
+                alert("*Please Enter Mail Id");
+                $("#stdMail").focus();
+                return "";
+            }
+
+            var stdAddressVar = $("#stdAddress").val();
+            if (stdAddressVar === "") {
+                alert("*Please Enter Address");
+                $("#stdAddress").focus();
+                return "";
+            }
+            var jsonStrObj = {
+                stdId: stdIdVar,
+                stdName: stdNameVar,
+                stdMail: stdMailVar,
+                stdAddress: stdAddressVar
+            };
+            return JSON.stringify(jsonStrObj);
+        }
+        // This method is used to create PUT Json request.
+        function createPUTRequest(connToken, jsonObj, dbName, relName) {
+            var putRequest = "{\n"
+                + "\"token\" : \""
+                + connToken
+                + "\","
+                + "\"dbName\": \""
+                + dbName
+                + "\",\n" + "\"cmd\" : \"PUT\",\n"
+                + "\"rel\" : \""
+                + relName + "\","
+                + "\"jsonStr\": \n"
+                + jsonObj
+                + "\n"
+                + "}";
+            return putRequest;
+        }
+        function executeCommand(reqString, dbBaseUrl, apiEndPointUrl) {
+            var url = dbBaseUrl + apiEndPointUrl;
+            var jsonObj;
+            $.post(url, reqString, function (result) {
+                jsonObj = JSON.parse(result);
+            }).fail(function (result) {
+                var dataJsonObj = result.responseText;
+                jsonObj = JSON.parse(dataJsonObj);
+            });
+            return jsonObj;
+        }
+
+        function resetForm() {
+            $("#stdId").val("");
+            $("#stdName").val("");
+            $("#stdMail").val("");
+            $("#stdAddress").val("");
+            $("#stdId").focus();
+        }
+
+        function saveStudent() {
+            var jsonStr = validateAndGetFormData();
+            if (jsonStr === "") {
+                return;
+            }
+            var putReqStr = createPUTRequest("90935528|-31948800628187151|90931559",
+                jsonStr, "STUDENT", "STD-REL");
+            alert(putReqStr);
+            jQuery.ajaxSetup({ async: false });
+            var resultObj = executeCommand(putReqStr,
+                "http://api.login2explore.com:5577", "/api/iml");
+            alert(JSON.stringify(resultObj));
+            jQuery.ajaxSetup({ async: true });
+            resetForm();
+        }
+    </script>
+
+</body>
+
+</html>
